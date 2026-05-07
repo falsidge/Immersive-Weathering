@@ -4,6 +4,7 @@ import com.ordana.immersive_weathering.configs.CommonConfigs;
 import com.ordana.immersive_weathering.entities.FallingLayerEntity;
 import com.ordana.immersive_weathering.reg.ModBlocks;
 import com.ordana.immersive_weathering.reg.ModTags;
+import com.ordana.immersive_weathering.util.EnchantmentUtil;
 import com.ordana.immersive_weathering.util.WeatheringHelper;
 import dev.architectury.injectables.annotations.PlatformOnly;
 import net.mehvahdjukaar.moonlight.api.platform.RegHelper;
@@ -121,7 +122,7 @@ public class LeafPileBlock extends LayerBlock implements BonemealableBlock {
         int layers = this.getLayers(state);
 
         if (layers > 3) {
-            if (CommonConfigs.LEAF_PILES_SLOW.get() && entity instanceof LivingEntity && !(entity instanceof Fox || entity instanceof Bee || EnchantmentHelper.getEnchantmentLevel(Enchantments.DEPTH_STRIDER, (LivingEntity) entity) > 0)) {
+            if (CommonConfigs.LEAF_PILES_SLOW.get() && entity instanceof LivingEntity livingEntity && !(entity instanceof Fox || entity instanceof Bee || EnchantmentUtil.hasEnchantment(livingEntity,  Enchantments.DEPTH_STRIDER))) {
                 float stuck = COLLISIONS[Math.max(0, layers - 1)];
                 entity.makeStuckInBlock(state, new Vec3(stuck, 1, stuck));
 
@@ -211,7 +212,7 @@ public class LeafPileBlock extends LayerBlock implements BonemealableBlock {
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
         return this.canBeBonemealed;
     }
 

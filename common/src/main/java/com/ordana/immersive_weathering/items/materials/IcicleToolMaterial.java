@@ -1,8 +1,11 @@
 package com.ordana.immersive_weathering.items.materials;
 
 import com.ordana.immersive_weathering.reg.ModItems;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.block.Block;
 
 public class IcicleToolMaterial implements Tier {
 
@@ -24,16 +27,16 @@ public class IcicleToolMaterial implements Tier {
     }
 
     @Override
-    public int getLevel() {
-        return 1;
-    }
-
-    @Override
     public int getEnchantmentValue() {
         return 10;
     }
 
     public Ingredient getRepairIngredient() {
         return Ingredient.of(ModItems.ICICLE.get());
+    }
+
+    @Override
+    public TagKey<Block> getIncorrectBlocksForDrops() {
+        return BlockTags.INCORRECT_FOR_STONE_TOOL;
     }
 }

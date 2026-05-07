@@ -17,17 +17,60 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class WeedsBlock extends CropBlock {
 
     private static final int FIRE_SPREAD = 60;
     private static final int FLAMMABILITY = 100;
+    private static Method GET_GROWTH_SPEED_METHOD = null;
+    private static Method getGetGrowthSpeedMethod = null;
+
+    // Hacky way to get growthspeed due to neoforge changing the signature
+    static
+    {
+        try  {
+            GET_GROWTH_SPEED_METHOD = CropBlock.class.getDeclaredMethod("getGrowthSpeed", BlockState.class, BlockGetter.class, BlockPos.class);
+            GET_GROWTH_SPEED_METHOD.setAccessible(true);
+            getGetGrowthSpeedMethod = WeedsBlock.class.getDeclaredMethod("getGrowthSpeed1", Block.class, BlockState.class, BlockGetter.class, BlockPos.class);
+        } catch (NoSuchMethodException e) {
+        }
+        if (GET_GROWTH_SPEED_METHOD == null) {
+            try {
+                GET_GROWTH_SPEED_METHOD = CropBlock.class.getDeclaredMethod("getGrowthSpeed", Block.class, BlockGetter.class, BlockPos.class);
+                GET_GROWTH_SPEED_METHOD.setAccessible(true);
+                getGetGrowthSpeedMethod = WeedsBlock.class.getDeclaredMethod("getGrowthSpeed2", Block.class, BlockState.class, BlockGetter.class, BlockPos.class);
+
+            } catch (NoSuchMethodException e2) {
+
+            }
+        }
+    }
+
 
     public WeedsBlock(Properties settings) {
         super(settings);
         RegHelper.registerBlockFlammability(this, FIRE_SPREAD, FLAMMABILITY);
+    }
+
+    public static float getGrowthSpeed1(Block block, BlockState state, BlockGetter level, BlockPos pos) {
+        try {
+            return (float) GET_GROWTH_SPEED_METHOD.invoke(null, state, level, pos);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            return 0;
+        }
+    }
+    public static float getGrowthSpeed2(Block block, BlockState state, BlockGetter level, BlockPos pos) {
+        try {
+            return (float) GET_GROWTH_SPEED_METHOD.invoke(null, block, level, pos);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            return 0;
+        }
     }
 
     @PlatformOnly(PlatformOnly.FORGE)
@@ -44,7 +87,13 @@ public class WeedsBlock extends CropBlock {
     public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int i = this.getAge(state);
         if (i < this.getMaxAge()) {
-            float f = getGrowthSpeed(this, level, pos);
+            float f = 0;
+            try {
+                f = (float) getGetGrowthSpeedMethod.invoke(null, this, state, level, pos);
+            }
+            catch (IllegalAccessException | InvocationTargetException e) {
+                return;
+            }
             if (random.nextInt((int) (25.0F / f) + 1) == 0) {
                 level.setBlock(pos, this.getStateForAge(i + 1), 2);
             }

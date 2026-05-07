@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 public class IceSickleItem extends SwordItem {
 
     public IceSickleItem(Tier tier, int i, float v, Properties properties) {
-        super(tier, i, v, properties);
+        super(tier, properties);
     }
 
     @Override
@@ -22,13 +22,13 @@ public class IceSickleItem extends SwordItem {
         return super.finishUsingItem(stack, level, entity);
     }
 
-    @Nullable
-    @Override
-    public FoodProperties getFoodProperties() {
-        return CommonConfigs.ICICLE_FOOD.get() ? ModFoods.ICICLE : null;
-    }
-    @Override
-    public boolean isEdible() {
-        return CommonConfigs.ICICLE_FOOD.get();
-    }
+//    @Nullable
+//    @Override
+//    public FoodProperties getFoodProperties() {
+//        return CommonConfigs.ICICLE_FOOD.get() ? ModFoods.ICICLE : null;
+//    }
+//    @Override
+//    public boolean isEdible() {
+//        return CommonConfigs.ICICLE_FOOD.get();
+//    }
 }

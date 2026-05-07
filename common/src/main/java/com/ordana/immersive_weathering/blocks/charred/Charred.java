@@ -3,12 +3,14 @@ package com.ordana.immersive_weathering.blocks.charred;
 import com.ordana.immersive_weathering.blocks.ModBlockProperties;
 import com.ordana.immersive_weathering.reg.ModParticles;
 import com.ordana.immersive_weathering.reg.ModTags;
+import com.ordana.immersive_weathering.util.EnchantmentUtil;
 import net.mehvahdjukaar.moonlight.api.block.ILightable;
 import net.mehvahdjukaar.moonlight.api.client.util.ParticleUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -29,7 +31,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Fallable;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,6 +42,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.Nullable;
 
 public interface Charred extends ILightable, Fallable {
 
@@ -88,7 +94,7 @@ public interface Charred extends ILightable, Fallable {
 
     default void onEntityStepOn(BlockState state, Entity entity) {
         if (isLitUp(state)) {
-            if (!entity.fireImmune() && entity instanceof LivingEntity && !EnchantmentHelper.hasFrostWalker((LivingEntity) entity)) {
+            if (!entity.fireImmune() && entity instanceof LivingEntity livingEntity && !EnchantmentUtil.hasEnchantment(livingEntity, Enchantments.FROST_WALKER)) {
                 entity.hurt(entity.damageSources().hotFloor(), 1.0F);
             }
         }
@@ -96,13 +102,18 @@ public interface Charred extends ILightable, Fallable {
 
 
     @Override
+    default boolean isLitUp(BlockState state, BlockGetter blockGetter, BlockPos blockPos) {
+        return isLitUp(state);
+    }
+
     default boolean isLitUp(BlockState state) {
         return state.getValue(SMOLDERING);
     }
 
+
     @Override
-    default BlockState toggleLitState(BlockState state, boolean lit) {
-        return state.setValue(SMOLDERING, lit);
+    default void setLitUp(BlockState state, LevelAccessor world, BlockPos pos, @Nullable Entity var4, boolean lit) {
+        state.setValue(SMOLDERING, lit);
     }
 
 
@@ -161,7 +172,7 @@ public interface Charred extends ILightable, Fallable {
             level.playSound(player, pos, flint ? SoundEvents.FLINTANDSTEEL_USE : SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             ParticleUtils.spawnParticlesOnBlockFaces(level, pos, ModParticles.EMBERSPARK.get(), UniformInt.of(3, 5));
             if (!player.getAbilities().instabuild) {
-                if (flint) stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
+                if (flint && player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) stack.hurtAndBreak(1, serverLevel, serverPlayer,  (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
                 if (charge) stack.shrink(1);
             }
             if (player instanceof ServerPlayer) {

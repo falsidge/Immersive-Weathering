@@ -22,14 +22,14 @@ public class IcicleItem extends BlockItem {
         return super.finishUsingItem(stack, level, entity);
     }
 
-    @Nullable
-    @Override
-    public FoodProperties getFoodProperties() {
-        return CommonConfigs.ICICLE_FOOD.get() ? ModFoods.ICICLE : null;
-    }
-
-    @Override
-    public boolean isEdible() {
-        return CommonConfigs.ICICLE_FOOD.get();
-    }
+//    @Nullable
+//    @Override
+//    public FoodProperties getFoodProperties() {
+//        return CommonConfigs.ICICLE_FOOD.get() ? ModFoods.ICICLE : null;
+//    }
+//
+//    @Override
+//    public boolean isEdible() {
+//        return CommonConfigs.ICICLE_FOOD.get();
+//    }
 }

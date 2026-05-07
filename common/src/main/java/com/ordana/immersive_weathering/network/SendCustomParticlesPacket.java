@@ -1,15 +1,17 @@
 package com.ordana.immersive_weathering.network;
 
+import com.ordana.immersive_weathering.ImmersiveWeathering;
 import com.ordana.immersive_weathering.configs.ClientConfigs;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.mehvahdjukaar.moonlight.api.platform.network.ChannelHandler;
 import net.mehvahdjukaar.moonlight.api.platform.network.Message;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -17,6 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SendCustomParticlesPacket implements Message {
+    public static final TypeAndCodec<RegistryFriendlyByteBuf, SendCustomParticlesPacket> CODEC = Message.makeType(
+            ImmersiveWeathering.res("s2c_custom_particles"), SendCustomParticlesPacket::new);
 
     private final EventType type;
     private final int extraData;
@@ -35,14 +39,14 @@ public class SendCustomParticlesPacket implements Message {
     }
 
     @Override
-    public void writeToBuffer(FriendlyByteBuf buf) {
+    public void write(RegistryFriendlyByteBuf buf) {
         buf.writeInt(this.extraData);
         buf.writeByte(type.ordinal());
         buf.writeBlockPos(pos);
     }
 
     @Override
-    public void handle(ChannelHandler.Context context) {
+    public void handle(Context context) {
         clientStuff(type, pos, extraData);
     }
 
@@ -73,5 +77,9 @@ public class SendCustomParticlesPacket implements Message {
 
     public enum EventType {
         DECAY_LEAVES
+    }
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return CODEC.type();
     }
 }

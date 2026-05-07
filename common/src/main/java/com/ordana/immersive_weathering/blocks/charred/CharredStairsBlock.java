@@ -86,13 +86,13 @@ public class CharredStairsBlock extends ModStairBlock implements Charred {
     @Override
     public void onProjectileHit(Level level, BlockState state, BlockHitResult pHit, Projectile projectile) {
         BlockPos pos = pHit.getBlockPos();
-        interactWithProjectile(level, state, projectile, pos);
+        lightableInteractWithEntity(level, state, projectile, pos);
     }
 
     @Override
     public void entityInside(BlockState state, Level levelIn, BlockPos pos, Entity entityIn) {
         if (entityIn instanceof Projectile projectile) {
-            interactWithProjectile(levelIn, state, projectile, pos);
+            lightableInteractWithEntity(levelIn, state, projectile, pos);
         }
     }
 

@@ -3,8 +3,8 @@ package com.ordana.immersive_weathering.configs;
 import com.ordana.immersive_weathering.ImmersiveWeathering;
 import net.mehvahdjukaar.moonlight.api.platform.PlatHelper;
 import net.mehvahdjukaar.moonlight.api.platform.configs.ConfigBuilder;
-import net.mehvahdjukaar.moonlight.api.platform.configs.ConfigSpec;
 import net.mehvahdjukaar.moonlight.api.platform.configs.ConfigType;
+import net.mehvahdjukaar.moonlight.api.platform.configs.ModConfigHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 public class CommonConfigs {
 
 
-    public static final ConfigSpec SERVER_SPEC;
+    public static final ModConfigHolder SERVER_SPEC;
 
     public static final Supplier<Boolean> BLOCK_GROWTHS;
     public static final Supplier<List<String>> DISABLED_GROWTHS;
@@ -94,7 +94,7 @@ public class CommonConfigs {
     static{
         ConfigBuilder builder = ConfigBuilder.create(ImmersiveWeathering.res("common"), ConfigType.COMMON);
 
-        builder.setSynced();
+//        builder.setSynced();
 
         builder.push("general");
         BLOCK_GROWTHS = builder.define("block_growths", true);
@@ -137,7 +137,7 @@ public class CommonConfigs {
         //all these are disabled when at 0 of course
         FREEZING_ICICLE_SEVERITY = builder.define("icicle", 300, 0, 1000);
         builder.pop();
-        builder.setSynced();
+//        builder.setSynced();
 
         builder.push("charring");
         FIRE_CHARS_WOOD_CHANCE = builder.define("fire_chars_wood", 0.3, 0, 1);
@@ -206,8 +206,8 @@ public class CommonConfigs {
         });
 
 
-        SERVER_SPEC = builder.buildAndRegister();
-        SERVER_SPEC.loadFromFile();
+        SERVER_SPEC = builder.build();
+        SERVER_SPEC.forceLoad();
     }
 
 

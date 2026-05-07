@@ -20,14 +20,13 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ImmersiveWeathering {
-
+public final class ImmersiveWeathering {
     public static final String MOD_ID = "immersive_weathering";
 
     public static final Logger LOGGER = LogManager.getLogger();
 
     public static ResourceLocation res(String name) {
-        return new ResourceLocation(MOD_ID, name);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
     }
 
     //called either on mod creation on fabric or mod setup on forge
@@ -55,6 +54,7 @@ public class ImmersiveWeathering {
 
         NetworkHandler.init();
 
+        ModArmorMaterials.init();
         ModBlocks.init();
         ModItems.init();
         ModEntities.init();

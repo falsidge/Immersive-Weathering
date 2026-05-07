@@ -12,6 +12,8 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
@@ -35,33 +37,35 @@ public class RootedGrassBlock extends GrassBlock implements BonemealableBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        ItemStack stack = player.getItemInHand(hand);
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         Item item = stack.getItem();
         if (item instanceof ShovelItem && !state.getValue(SNOWY)) {
             level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0f, 1.0f);
-            stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
-            if (player instanceof ServerPlayer) {
+            if (player instanceof ServerPlayer serverPlayer && level instanceof  ServerLevel serverLevel) {
+                stack.hurtAndBreak(1, serverLevel, serverPlayer, (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
+
                 level.setBlockAndUpdate(pos, Blocks.DIRT_PATH.defaultBlockState());
                 player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
         if (item instanceof HoeItem) {
             level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0f, 1.0f);
-            stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
-            if (player instanceof ServerPlayer) {
+
+            if (player instanceof ServerPlayer serverPlayer && level instanceof  ServerLevel serverLevel) {
+                stack.hurtAndBreak(1, serverLevel, serverPlayer, (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
+
                 level.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.withPropertiesOf(state));
                 player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
                 Block.popResourceFromFace(level, pos, hitResult.getDirection(), Items.HANGING_ROOTS.getDefaultInstance());
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
-        return super.use(state, level, pos, player, hand, hitResult);
+        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
         boolean space = false;
         for (Direction dir : Direction.values()) {
             var targetState = level.getBlockState(pos.relative(dir));

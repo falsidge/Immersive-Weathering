@@ -2,8 +2,9 @@ package com.ordana.immersive_weathering.reg;
 
 import com.ordana.immersive_weathering.ImmersiveWeathering;
 import com.ordana.immersive_weathering.blocks.LeafPileBlock;
+import com.ordana.immersive_weathering.configs.CommonConfigs;
 import com.ordana.immersive_weathering.items.*;
-import com.ordana.immersive_weathering.items.materials.FlowerCrownMaterial;
+//import com.ordana.immersive_weathering.items.materials.FlowerCrownMaterial;
 import com.ordana.immersive_weathering.items.materials.IcicleToolMaterial;
 import net.mehvahdjukaar.moonlight.api.item.WoodBasedItem;
 import net.mehvahdjukaar.moonlight.api.misc.Registrator;
@@ -12,7 +13,6 @@ import net.mehvahdjukaar.moonlight.api.set.BlockSetAPI;
 import net.mehvahdjukaar.moonlight.api.set.leaves.LeavesType;
 import net.mehvahdjukaar.moonlight.api.set.wood.WoodType;
 import net.mehvahdjukaar.moonlight.api.util.Utils;
-import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Blocks;
 
@@ -42,7 +42,7 @@ public class ModItems {
     //icicle
 
     public static final Supplier<BlockItem> ICICLE = regItem("icicle", () -> new IcicleItem(
-            ModBlocks.ICICLE.get(), new Item.Properties().food(ModFoods.ICICLE)));
+            ModBlocks.ICICLE.get(), CommonConfigs.ICICLE_FOOD.get() ? new Item.Properties().food(ModFoods.ICICLE) : new Item.Properties()));
 
     //leaf pile
     public static final Map<LeavesType, BlockItem> LEAF_PILES = new LinkedHashMap<>();
@@ -71,7 +71,7 @@ public class ModItems {
             new AzaleaFlowersItem(new Item.Properties().food(ModFoods.AZALEA_FLOWER)));
 
     public static final Supplier<Item> FLOWER_CROWN = regItem("flower_crown", () ->
-            new FlowerCrownItem(FlowerCrownMaterial.INSTANCE, ArmorItem.Type.HELMET,
+            new FlowerCrownItem(ModArmorMaterials.FLOWER_CROWN, ArmorItem.Type.HELMET,
                     new Item.Properties()));
 
     public static final Supplier<Item> MOSS_CLUMP = regItem("moss_clump", () ->
@@ -92,11 +92,12 @@ public class ModItems {
             () -> new HoneycombItem(new Item.Properties()));
 
     public static final Supplier<Item> STEEL_WOOL = regItem("steel_wool", () ->
-            new Item(new Item.Properties().defaultDurability(128)));
+            new Item(new Item.Properties().durability(128)));
 
     public static final Supplier<Item> ICE_SICKLE = regItem("ice_sickle", () ->
             new IceSickleItem(IcicleToolMaterial.INSTANCE, 5, -1f,
-                    new Item.Properties().food(ModFoods.ICICLE)));
+                    CommonConfigs.ICICLE_FOOD.get() ?
+                    new Item.Properties().food(ModFoods.ICICLE) : new Item.Properties()));
 
     public static final Supplier<Item> THIN_ICE_ITEM = regItem("thin_ice", () ->
             new ThinIceItem(ModBlocks.THIN_ICE.get(), new Item.Properties()));
@@ -114,7 +115,7 @@ public class ModItems {
         for (WoodType type : woodTypes) {
             String name = !type.canBurn() ? type.getVariantId("scales", false) : type.getVariantId("bark", false);
 
-            Item item = new WoodBasedItem(new Item.Properties(), type, 200);
+            Item item = new WoodBasedItem(new Item.Properties(), type);
             event.register(ImmersiveWeathering.res(name), item);
             BARK.put(type, item);
             type.addChild("immersive_weathering:bark", item);

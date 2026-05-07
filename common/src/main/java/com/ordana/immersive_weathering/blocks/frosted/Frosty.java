@@ -16,6 +16,8 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +39,7 @@ public interface Frosty {
                 .put(Blocks.AIR, ModBlocks.FROST.get())
                 .put(Blocks.GLASS, ModBlocks.FROSTY_GLASS.get())
                 .put(Blocks.FERN, ModBlocks.FROSTY_FERN.get())
-                .put(Blocks.GRASS, ModBlocks.FROSTY_GRASS.get())
+                .put(Blocks.SHORT_GRASS, ModBlocks.FROSTY_GRASS.get())
                 .put(Blocks.GLASS_PANE, ModBlocks.FROSTY_GLASS_PANE.get());
         //CommonPlatform.addExtraCrackedBlocks(builder);
         return builder.build();
@@ -73,21 +75,21 @@ public interface Frosty {
         }
     }
 
-    default InteractionResult interactWithPlayer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+    default ItemInteractionResult interactWithPlayer(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         if (stack.getItem() instanceof FlintAndSteelItem) {
             level.playSound(player, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
             if (level.isClientSide()) ParticleUtil.spawnParticlesOnBlockFaces(level, pos, ParticleTypes.SMOKE, UniformInt.of(3, 5), -0.05f, 0.05f, false);
-            if (player instanceof ServerPlayer) {
-                if (!player.getAbilities().instabuild) stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
+            if (player instanceof ServerPlayer serverPlayer && level instanceof  ServerLevel serverLevel) {
+                if (!player.getAbilities().instabuild) stack.hurtAndBreak(1, serverLevel, serverPlayer, (item) -> player.onEquippedItemBroken(item, LivingEntity.getSlotForHand(hand)));
                 level.setBlockAndUpdate(pos, this.getUnfrosty(state).get());
                 level.gameEvent(player, GameEvent.SHEAR, pos);
                 player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
 }

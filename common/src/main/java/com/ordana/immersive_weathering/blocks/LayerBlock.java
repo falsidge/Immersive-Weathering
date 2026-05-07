@@ -1,13 +1,16 @@
 package com.ordana.immersive_weathering.blocks;
 
+import com.mojang.serialization.MapCodec;
 import com.ordana.immersive_weathering.entities.FallingLayerEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -31,6 +34,7 @@ import java.util.Collections;
 public class LayerBlock extends FallingBlock {
     public static final IntegerProperty LAYERS_8 = BlockStateProperties.LAYERS;
     private static final VoxelShape[] SHAPE_BY_LAYER = new VoxelShape[8 + 1];
+    public static final MapCodec<LayerBlock> CODEC = simpleCodec(LayerBlock::new);
 
     private final int min;
     private final int max;
@@ -45,6 +49,11 @@ public class LayerBlock extends FallingBlock {
         this.registerDefaultState(this.stateDefinition.any().setValue(layerProperty(), 1));
         this.min = Collections.min(this.layerProperty().getPossibleValues());
         this.max = Collections.max(this.layerProperty().getPossibleValues());
+    }
+
+    @Override
+    protected MapCodec<? extends FallingBlock> codec() {
+        return CODEC;
     }
 
     public final int getMaxLayers() {
@@ -87,7 +96,6 @@ public class LayerBlock extends FallingBlock {
         return getDefaultShape(pState);
     }
 
-    @Override
     public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
         return switch (type) {
             case LAND -> getLayers(state) < 5;
@@ -96,6 +104,19 @@ public class LayerBlock extends FallingBlock {
         };
     }
 
+    @Override
+    public boolean isPathfindable(BlockState blockState, PathComputationType pathComputationType) {
+        switch (pathComputationType) {
+            case LAND:
+                return getLayers(blockState) < 5;
+            case WATER:
+                return getLayers(blockState) == 0;
+            case AIR:
+                return false;
+            default:
+                return false;
+        }
+    }
     @Override
     public boolean useShapeForLightOcclusion(BlockState state) {
         return true;

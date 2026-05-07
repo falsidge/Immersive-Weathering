@@ -6,7 +6,7 @@ import com.ordana.immersive_weathering.configs.CommonConfigs;
 import com.ordana.immersive_weathering.reg.ModBlocks;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import net.mehvahdjukaar.moonlight.api.platform.configs.fabric.FabricConfigListScreen;
+import net.mehvahdjukaar.moonlight.api.platform.configs.platform.FabricConfigListScreen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;

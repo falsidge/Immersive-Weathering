@@ -1,6 +1,7 @@
 package com.ordana.immersive_weathering.blocks;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -16,16 +17,15 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BonemealableBlock;
-import net.minecraft.world.level.block.MultifaceBlock;
-import net.minecraft.world.level.block.MultifaceSpreader;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -43,10 +43,16 @@ public class IvyBlock extends MultifaceBlock implements BonemealableBlock {
 	public static final IntegerProperty AGE = ModBlockProperties.AGE;
 	public static final int MAX_AGE = 10;
 	private final MultifaceSpreader spreader = new MultifaceSpreader(this);
+	public static final MapCodec<IvyBlock> CODEC = simpleCodec(IvyBlock::new);
 
 	public IvyBlock(Properties settings) {
 		super(settings);
 		this.registerDefaultState(this.defaultBlockState().setValue(AGE, 7));
+	}
+
+	@Override
+	protected MapCodec<? extends IvyBlock> codec() {
+		return CODEC;
 	}
 
 	@Override
@@ -79,7 +85,7 @@ public class IvyBlock extends MultifaceBlock implements BonemealableBlock {
 	}
 
 	@Override
-	public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, boolean isClient) {
+	public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
 		return state.getValue(AGE) < 0 || Stream.of(DIRECTIONS).anyMatch(direction -> this.isValidStateForPlacement(level, state, pos, direction.getOpposite()));
 	}
 
@@ -354,21 +360,27 @@ public class IvyBlock extends MultifaceBlock implements BonemealableBlock {
 
 		return false;
 	}
-
+//	@Override
+//	public ItemInteractionResult useItemOn(ItemStack itemStack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+//		ItemInteractionResult success = interactWithPlayer(state, level, pos, player, hand);
+//		if (success != ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) return success;
+//
+//		return super.useItemOn(itemStack, state, level, pos, player, hand, hit);
+//	}
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		ItemStack stack = player.getItemInHand(hand);
+	public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+//		ItemStack stack = player.getItemInHand(hand);
 		if (stack.getItem() instanceof ShearsItem && state.getValue(AGE) < MAX_AGE) {
 			level.playSound(player, pos, SoundEvents.GROWING_PLANT_CROP, SoundSource.BLOCKS, 1.0f, 1.0f);
 			ParticleUtils.spawnParticlesOnBlockFaces(level, pos, new BlockParticleOption(ParticleTypes.BLOCK, state), UniformInt.of(3, 5));
-			if (player instanceof ServerPlayer) {
-				if (!player.getAbilities().instabuild) stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
+			if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
+				if (!player.getAbilities().instabuild) stack.hurtAndBreak(1, serverLevel, serverPlayer,  (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
 				player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
 				level.gameEvent(player, GameEvent.SHEAR, pos);
 				level.setBlockAndUpdate(pos, state.setValue(AGE, MAX_AGE));
 			}
-			return InteractionResult.sidedSuccess(level.isClientSide);
+			return ItemInteractionResult.sidedSuccess(level.isClientSide);
 		}
-		return super.use(state, level, pos, player, hand, hitResult);
+		return super.useItemOn(stack, state, level, pos, player, hand, hit);
 	}
 }

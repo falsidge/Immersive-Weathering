@@ -13,6 +13,8 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
@@ -101,19 +103,19 @@ public class EarthenClayBlockGrassy extends BaseSoilBlock implements SimpleWater
         super.randomTick(blockState, serverLevel, pos, random);
     }
 
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-        ItemStack stack = player.getItemInHand(hand);
+    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         Item item = stack.getItem();
         if (item instanceof HoeItem) {
             level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0f, 1.0f);
-            stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
-            if (player instanceof ServerPlayer) {
+            if (player instanceof ServerPlayer serverPlayer && level instanceof  ServerLevel serverLevel) {
+                stack.hurtAndBreak(1, serverLevel, serverPlayer, (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
+
                 if (state.getValue(WATERLOGGED)) level.setBlockAndUpdate(pos, ModBlocks.EARTHEN_CLAY_FARMLAND.get().defaultBlockState().setValue(BlockStateProperties.MOISTURE, 7));
                 else level.setBlockAndUpdate(pos, ModBlocks.EARTHEN_CLAY_FARMLAND.get().defaultBlockState());
                 player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
             }
-            return InteractionResult.sidedSuccess(level.isClientSide);
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
-        return super.use(state, level, pos, player, hand, hitResult);
+        return super.useItemOn(stack, state, level, pos, player, hand, hitResult);
     }
 }

@@ -23,6 +23,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -82,16 +83,15 @@ public interface Sandy {
         return Optional.ofNullable(NORMAL_TO_SANDY.get().get(block));
     }
 
-    default boolean interactWithPlayer(BlockState state, Level level, BlockPos pos, Player player,
+    default boolean interactWithPlayer(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                        InteractionHand hand, BlockHitResult hitResult) {
-        ItemStack stack = player.getItemInHand(hand);
         Item item = stack.getItem();
         Optional<BlockState> unSandy = getUnSandy(state);
         if (unSandy.isPresent() && item instanceof ShovelItem) {
             level.playSound(player, pos, SoundEvents.SAND_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
             ParticleUtils.spawnParticlesOnBlockFaces(level, pos, new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.SAND.defaultBlockState()), UniformInt.of(3, 5));
-            stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
-            if (player instanceof ServerPlayer serverPlayer) {
+            if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
+                stack.hurtAndBreak(1, serverLevel, serverPlayer, (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
                 level.setBlockAndUpdate(pos, unSandy.get());
                 if (state.getValue(ModBlockProperties.SANDINESS) == 0) level.setBlockAndUpdate(pos, unSandy.get());
                 if (state.getValue(ModBlockProperties.SANDINESS) == 1) level.setBlockAndUpdate(pos, state.setValue(ModBlockProperties.SANDINESS, 0));

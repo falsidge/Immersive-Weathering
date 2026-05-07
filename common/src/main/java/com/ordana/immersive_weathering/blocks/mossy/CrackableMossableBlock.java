@@ -1,7 +1,6 @@
 package com.ordana.immersive_weathering.blocks.mossy;
 
 import com.ordana.immersive_weathering.blocks.cracked.CrackSpreader;
-import com.ordana.immersive_weathering.blocks.cracked.Crackable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -29,7 +28,7 @@ public class CrackableMossableBlock extends MossableBlock implements CrackableMo
     }
 
     @Override
-    public Crackable.CrackLevel getCrackLevel() {
+    public CrackLevel getCrackLevel() {
         return crackLevel;
     }
 

@@ -28,7 +28,7 @@ public abstract class BubbleColumnMixin extends Block {
 
     @WrapOperation(method = "canSurvive", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z",
-            ordinal = 1))
+            ordinal = 0))
     protected boolean canSurvive(BlockState instance, Block block, Operation<Boolean> original) {
         if (instance.is(ModTags.BUBBLES_ASCENDING) || instance.is(ModTags.BUBBLES_DESCENDING)) {
             return true;

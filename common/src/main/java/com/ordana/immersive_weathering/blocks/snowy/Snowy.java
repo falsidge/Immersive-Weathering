@@ -9,7 +9,6 @@ import com.ordana.immersive_weathering.util.TemperatureManager;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +22,7 @@ import net.minecraft.util.ParticleUtils;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -30,10 +30,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
@@ -80,16 +78,16 @@ public interface Snowy {
         return Optional.ofNullable(NORMAL_TO_SNOWY.get().get(block));
     }
 
-    default boolean interactWithPlayer(BlockState state, Level level, BlockPos pos, Player player,
+    default boolean interactWithPlayer(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                        InteractionHand hand, BlockHitResult hitResult) {
-        ItemStack stack = player.getItemInHand(hand);
         Item item = stack.getItem();
         Optional<BlockState> unSnowy = getUnSnowy(state);
         if (unSnowy.isPresent() && item instanceof ShovelItem) {
             level.playSound(player, pos, SoundEvents.SNOW_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
             ParticleUtils.spawnParticlesOnBlockFaces(level, pos, new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.SNOW.defaultBlockState()), UniformInt.of(3, 5));
-            stack.hurtAndBreak(1, player, (l) -> l.broadcastBreakEvent(hand));
-            if (player instanceof ServerPlayer serverPlayer) {
+            if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
+                stack.hurtAndBreak(1, serverLevel, serverPlayer, (ite) -> player.onEquippedItemBroken(ite, LivingEntity.getSlotForHand(hand)));
+
                 level.setBlockAndUpdate(pos, unSnowy.get());
                 if (!player.isCreative() || CommonConfigs.CREATIVE_DROP.get())
                     Block.popResourceFromFace(level, pos, hitResult.getDirection(), new ItemStack(Items.SNOWBALL));

@@ -1,6 +1,8 @@
 package com.ordana.immersive_weathering.fabric;
 
 import com.ordana.immersive_weathering.ImmersiveWeathering;
+import net.fabricmc.api.ModInitializer;
+import com.ordana.immersive_weathering.ImmersiveWeathering;
 import com.ordana.immersive_weathering.configs.CommonConfigs;
 import com.ordana.immersive_weathering.events.ModEvents;
 import com.ordana.immersive_weathering.reg.ModWaxables;
@@ -44,5 +46,4 @@ public class ImmersiveWeatheringFabric implements ModInitializer {
     public static InteractionResult onRightClickBlock(Player player, Level level, InteractionHand hand, BlockHitResult hitResult) {
         return ModEvents.onBlockCLicked(player.getItemInHand(hand), player, level, hand, hitResult);
     }
-
 }

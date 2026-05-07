@@ -9,6 +9,7 @@ import com.ordana.immersive_weathering.network.SendCustomParticlesPacket;
 import com.ordana.immersive_weathering.reg.ModBlocks;
 import com.ordana.immersive_weathering.util.WeatheringHelper;
 import net.mehvahdjukaar.moonlight.api.platform.PlatHelper;
+import net.mehvahdjukaar.moonlight.api.platform.network.NetworkHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -155,7 +156,7 @@ public class LeavesGrowth extends BuiltinBlockGrowth {
         if (!downState.canOcclude() || !downState.isFaceSturdy(level, downPos, Direction.UP)) {
 
             //packet here
-            NetworkHandler.CHANNEL.sendToAllClientPlayersInRange(level, pos, 32,
+            NetworkHelper.sendToAllClientPlayersInRange(level, pos, 32,
                     new SendCustomParticlesPacket(SendCustomParticlesPacket.EventType.DECAY_LEAVES,
                             pos, Block.getId(state)));
         }

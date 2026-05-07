@@ -1,6 +1,7 @@
 package com.ordana.immersive_weathering.data.position_tests;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.Level;
@@ -44,7 +45,7 @@ public class DummyWorldGenerationContext extends WorldGenerationContext {
         }
 
         @Override
-        public CompletableFuture<ChunkAccess> fillFromNoise(Executor executor, Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess chunkAccess) {
+        public CompletableFuture<ChunkAccess> fillFromNoise(Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess chunkAccess) {
             return null;
         }
 
@@ -70,7 +71,7 @@ public class DummyWorldGenerationContext extends WorldGenerationContext {
         //these will never get called
 
         @Override
-        protected Codec<? extends ChunkGenerator> codec() {
+        protected MapCodec<? extends ChunkGenerator> codec() {
             return null;
         }
 

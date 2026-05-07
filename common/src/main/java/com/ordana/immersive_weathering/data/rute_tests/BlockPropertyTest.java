@@ -2,6 +2,7 @@ package com.ordana.immersive_weathering.data.rute_tests;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.ordana.immersive_weathering.data.block_growths.Operator;
 import com.ordana.immersive_weathering.reg.ModRuleTests;
@@ -22,8 +23,8 @@ import java.util.function.Predicate;
 
 public class BlockPropertyTest extends RuleTest {
 
-    public static final Codec<BlockPropertyTest> CODEC = PropPredicate.CODEC.listOf().fieldOf("properties")
-            .xmap(BlockPropertyTest::new, (t) -> t.propPredicates).codec();
+    public static final MapCodec<BlockPropertyTest> CODEC = PropPredicate.CODEC.listOf().fieldOf("properties")
+            .xmap(BlockPropertyTest::new, (t) -> t.propPredicates);
 
     private final List<PropPredicate> propPredicates;
 
@@ -54,15 +55,15 @@ public class BlockPropertyTest extends RuleTest {
                             if (state.getValues().isEmpty()) {
                                 return DataResult.error(() -> "Target Block has no properties");
                             }
-                            Codec<PropPredicate> c = propertyCodec(state).partialDispatch("property",
-                                    b -> DataResult.success(b.getProperty()), (property) -> {
+                            MapCodec<PropPredicate> c = propertyCodec(state).dispatchMap("property",
+                                    b -> (b.getProperty()), (property) -> {
 
-                                        Codec<PropPredicate> c1 = RecordCodecBuilder.create(i -> i.group(
+                                        MapCodec<PropPredicate> c1 = RecordCodecBuilder.mapCodec(i -> i.group(
                                                 StrOpt.of(valueCodec(property),"value").forGetter(PropPredicate::getTargetValue),
                                                 StrOpt.of(Operator.CODEC, "operator", Operator.EQUAL).forGetter(PropPredicate::getOperator)
                                         ).apply(i, (v, o) -> new PropPredicate(block, property, v, o)));
 
-                                        return DataResult.success(c1);
+                                        return (c1);
                                     });
                             return DataResult.success(c);
                         });

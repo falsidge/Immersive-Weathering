@@ -16,6 +16,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Fallable;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -27,8 +28,8 @@ import java.util.Random;
 public class ModPropaguleBlock extends MangrovePropaguleBlock implements Fallable {
     private static final BooleanProperty WATERLOGGED;
 
-    public ModPropaguleBlock(Properties properties) {
-        super(properties);
+    public ModPropaguleBlock(TreeGrower treeGrower, Properties properties) {
+        super(treeGrower, properties);
     }
 
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean notify) {
