@@ -58,12 +58,10 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
-    finalizedBy("copyJars")
-}
-tasks.register("copyJars", Copy) {
-    dependsOn(remapJar)
-    copy {
-    from remapJar
-    into "$rootDir/build/libs"
+    doLast {
+        copy {
+            from remapJar
+            into "$rootDir/build/libs"
+        }
     }
 }
